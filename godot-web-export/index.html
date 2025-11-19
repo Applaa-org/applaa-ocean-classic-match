@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ocean-classic-match</title>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d30 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #cccccc;
+        }
+        #gameContainer {
+            text-align: center;
+            padding: 20px;
+        }
+        #gameCanvas {
+            border: 2px solid #ff8800;
+            border-radius: 8px;
+            background: #1a1a1a;
+            box-shadow: 0 4px 20px rgba(255, 136, 0, 0.3);
+            display: block;
+            margin: 20px auto;
+        }
+        h1 {
+            color: #ff8800;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .info {
+            color: #999999;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .controls {
+            margin-top: 15px;
+            color: #cccccc;
+            font-size: 13px;
+        }
+        .score {
+            color: #4ade80;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <h1>🎮 ocean-classic-match</h1>
+        <div class="info">Applaa Game Preview - Test Build</div>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div class="score">Score: <span id="score">0</span></div>
+        <div class="controls">
+            Click gems to swap and match 3 in a row
+        </div>
+        <div id="status" style="margin-top: 10px; color: #4ade80; font-size: 12px;">Game loaded successfully!</div>
+    </div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        
+        // Game state
+        let score = 0;
+        const canvasWidth = 800;
+        const canvasHeight = 600;
+        
+        
+        // Puzzle Game (Match-3 style)
+        const gridSize = 8;
+        const cellSize = Math.min(800, 600) / gridSize;
+        let grid = [];
+        let selected = null;
+        
+        // Initialize grid with random colors
+        const colors = ['#ffff00', '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
+        for (let i = 0; i < gridSize; i++) {
+            grid[i] = [];
+            for (let j = 0; j < gridSize; j++) {
+                grid[i][j] = colors[Math.floor(Math.random() * colors.length)];
+            }
+        }
+        
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / cellSize);
+            const y = Math.floor((e.clientY - rect.top) / cellSize);
+            
+            if (selected) {
+                // Swap
+                const temp = grid[selected.y][selected.x];
+                grid[selected.y][selected.x] = grid[y][x];
+                grid[y][x] = temp;
+                selected = null;
+                checkMatches();
+            } else {
+                selected = { x, y };
+            }
+        });
+        
+        function checkMatches() {
+            // Simple match detection
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize - 2; j++) {
+                    if (grid[i][j] === grid[i][j+1] && grid[i][j] === grid[i][j+2]) {
+                        grid[i][j] = colors[Math.floor(Math.random() * colors.length)];
+                        grid[i][j+1] = colors[Math.floor(Math.random() * colors.length)];
+                        grid[i][j+2] = colors[Math.floor(Math.random() * colors.length)];
+                        score += 10;
+                        scoreElement.textContent = score;
+                    }
+                }
+            }
+        }
+        
+        function update() {
+            // Puzzle games are mostly event-driven
+        }
+        
+        function render() {
+            ctx.fillStyle = '#1a1a2a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    ctx.fillStyle = grid[i][j];
+                    ctx.fillRect(j * cellSize, i * cellSize, cellSize - 2, cellSize - 2);
+                    
+                    if (selected && selected.x === j && selected.y === i) {
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(j * cellSize, i * cellSize, cellSize - 2, cellSize - 2);
+                    }
+                }
+            }
+        }
+        
+        function gameLoop() {
+            update();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        gameLoop();
+    
+        
+        console.log('🎮 Applaa game preview loaded successfully! Type: puzzle');
+    </script>
+</body>
+</html>
